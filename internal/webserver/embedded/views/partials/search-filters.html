@@ -1,6 +1,6 @@
 {{$idPrefix := or .FilterIdPrefix ""}}
 <div class="row card-body" id="search-filters{{if $idPrefix}}-{{$idPrefix}}{{end}}">
-    {{if $idPrefix}}
+    {{if and $idPrefix (not .OmitSearchInput)}}
     <fieldset class="mb-4">
         <legend class="fs-5"><i class="bi bi-search me-3"></i>{{t .Lang "Search"}}</legend>
         <div class="row">

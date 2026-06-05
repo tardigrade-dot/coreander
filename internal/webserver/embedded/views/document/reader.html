@@ -12,6 +12,38 @@
 <link rel="mask-icon" href="/images/safari-pinned-tab.svg{{versionParam .Version}}" color="#5bbad5">
 <meta name="msapplication-TileColor" content="#da532c">
 <link href="/css/reader.css{{versionParam .Version}}" rel="stylesheet">
+<style>
+    /* Hide all UI navigation controls when viewing in video mode */
+    html.video-mode #header-bar,
+    html.video-mode #nav-bar,
+    html.video-mode #side-bar,
+    html.video-mode #dimming-overlay {
+        display: none !important;
+    }
+    /* Force full-screen view inside video mode with standard padding/margins hidden */
+    html.video-mode foliate-view {
+        position: absolute !important;
+        top: 0 !important;
+        bottom: 0 !important;
+        left: 0 !important;
+        right: 0 !important;
+        height: 100vh !important;
+        width: 100vw !important;
+        padding: 0 !important;
+        margin: 0 !important;
+        z-index: 1000 !important;
+    }
+    html.video-mode body {
+        background-color: transparent !important;
+        overflow: hidden !important;
+    }
+</style>
+<script>
+    if (new URLSearchParams(window.location.search).get('mode') === 'video') {
+        document.documentElement.classList.add('video-mode');
+    }
+</script>
+
 
 <input type="hidden" id="url" value="{{.fqdn}}/documents/{{.Slug}}/download">
 <input type="hidden" id="slug" value="{{.Slug}}">
@@ -140,7 +172,17 @@
     "session_expired_reading": {{t .Lang "Session expired. Your reading position is still saved locally."}},
     "position_updated_from_server": {{t .Lang "Reading position updated from another device."}},
     "not_logged_in_reading": {{t .Lang "You are not logged in. Your reading position is saved locally only."}},
-    "position_reset_reading": {{t .Lang "Your saved reading position was reset because this document changed."}}
+    "position_reset_reading": {{t .Lang "Your saved reading position was reset because this document changed."}},
+    "tts_play": {{t .Lang "Read aloud"}},
+    "tts_pause": {{t .Lang "Pause read aloud"}},
+    "tts_resume": {{t .Lang "Resume read aloud"}},
+    "tts_stop": {{t .Lang "Stop read aloud"}},
+    "tts_loading": {{t .Lang "Generating speech..."}},
+    "tts_unavailable": {{t .Lang "Text-to-speech service is unavailable."}},
+    "tts_no_text": {{t .Lang "No readable text found."}},
+    "tts_engine": {{t .Lang "Text-to-speech voice"}},
+    "tts_engine_default": {{t .Lang "Default"}},
+    "tts_engine_supertonic": {{t .Lang "English F1"}}
 }}</script>
 
 <dialog id="reader-toast" role="alert" aria-live="assertive" aria-atomic="true" data-auto-hide="true" data-delay="5000">

@@ -20,6 +20,70 @@
         </p>
     </div>
 {{end}}
+
+{{if .Compact}}
+<div class="row align-items-center py-3">
+    <div class="col-12 col-md-8 text-start">
+        <div class="d-flex flex-wrap align-items-baseline gap-2 mb-1">
+            <h4 class="mb-0">
+                <a href="/documents/{{.Document.Slug}}" class="text-decoration-none fw-semibold">{{.Document.Title}}</a>
+            </h4>
+            {{ if ne .Document.Series "" }} {{$seriesTitle := t .Lang "Search for more titles belonging to %s" .Document.Series}}
+            <span class="badge text-bg-secondary"><a href="/series/{{.Document.SeriesSlug}}" title="{{$seriesTitle}}" class="text-white text-decoration-none">{{.Document.Series}}{{ if ne .Document.SeriesIndex 0.0 }} #{{.Document.SeriesIndex}}{{end}}</a></span>
+            {{ end }}
+        </div>
+        
+        <div class="mb-2">
+            {{if .Document.Authors}}
+            <span class="fs-6 me-3">
+                <span class="text-muted">{{t .Lang "Authors"}}:</span>
+                {{range $i, $author := .Document.Authors}}
+                {{$authorTitle := t $ctx.Lang "Search for more titles by %s" $author}}
+                <a href="/authors/{{index $ctx.Document.AuthorsSlugs $i}}" title="{{$authorTitle}}" class="text-decoration-none fw-medium">{{$author}}</a>{{if notLast $ctx.Document.Authors $i}}, {{end}}
+                {{end}}
+            </span>
+            {{else}}
+                <span class="fs-6 me-3 text-muted">{{t .Lang "Unknown author"}}</span>
+            {{end}}
+
+            {{if .Document.Illustrators}}
+            <span class="fs-6 me-3">
+                <span class="text-muted">{{t .Lang "Illustrations"}}:</span>
+                {{range $i, $ill := .Document.Illustrators}}
+                {{$illTitle := t $ctx.Lang "Search for more titles by %s" $ill}}
+                <a href="/authors/{{slugify $ill}}" title="{{$illTitle}}" class="text-decoration-none">{{$ill}}</a>{{if notLast $ctx.Document.Illustrators $i}}, {{end}}
+                {{end}}
+            </span>
+            {{end}}
+        </div>
+
+        {{template "partials/document-metadata" dict "Lang" .Lang "Document" .Document "Session" .Session "WordsPerMinute" .WordsPerMinute "IllustratedMinAmount" .IllustratedMinAmount "Compact" true}}
+
+        {{ if .Document.Subjects }}
+        <div class="d-flex flex-wrap gap-1 mt-2">
+            {{range $i, $subject := .Document.Subjects}}
+                {{$subjectTitle := t $ctx.Lang "Search for more titles in %s" $subject}}
+                <a class="badge text-bg-light text-secondary text-decoration-none" href="/documents?subjects={{urlquery $subject}}" title="{{$subjectTitle}}">{{$subject}}</a>
+            {{end}}
+        </div>
+        {{ end }}
+
+        {{if .Document.Description}}
+        <div class="small text-muted mt-2 clamp-2">{{.Document.Description}}</div>
+        {{end}}
+    </div>
+    
+    <div class="col-12 col-md-4 mt-3 mt-md-0 d-flex justify-content-md-end align-items-center gap-2">
+        {{template "partials/actions" dict "Lang" .Lang "Document" .Document "Session" .Session "FQDN" .FQDN "Version" .Version "EmailSendingConfigured" .EmailSendingConfigured "DefaultAction" .DefaultAction "CanShare" .CanShare "PreferredEpub" .PreferredEpub "ShareMaxRecipients" .ShareMaxRecipients "ShareCommentMaxSize" .ShareCommentMaxSize "ButtonSize" "btn-sm"}}
+        
+        {{if and .Session (eq .Session.Role 2)}}
+        <button href="#" data-bs-toggle="modal" data-bs-target="#delete-modal" data-url="/documents/{{.Document.Slug}}" class="btn btn-sm btn-outline-danger" title="{{.Document.ID}}">
+            <i class="bi-trash3-fill"></i>
+        </button>
+        {{end}}
+    </div>
+</div>
+{{else}}
 <div class="row">
     <div class="col-12 col-md-4 col-lg-3 mb-3">
         <div class="mb-3">
@@ -34,7 +98,7 @@
                 .Document.Series}}
                 <p class="text-start text-muted text-uppercase mb-0"><a
                         href="/series/{{.Document.SeriesSlug}}"
-                        title={{$seriesTitle}}>{{.Document.Series}}{{ if ne .Document.SeriesIndex 0.0 }} {{.Document.SeriesIndex}}{{end}}</a></p>
+                        title="{{$seriesTitle}}">{{.Document.Series}}{{ if ne .Document.SeriesIndex 0.0 }} {{.Document.SeriesIndex}}{{end}}</a></p>
                 {{ end }}
                 <h2>
                     <a href="/documents/{{.Document.Slug}}">{{.Document.Title}}</a>
@@ -54,7 +118,7 @@
                 <p class="fs-5 mb-0">
                     {{range $i, $author := .Document.Authors}}
                     {{$authorTitle := t $ctx.Lang "Search for more titles by %s" $author}}
-                    <a href="/authors/{{index $ctx.Document.AuthorsSlugs $i}}" title={{$authorTitle}}>{{$author}}</a>{{if notLast $ctx.Document.Authors $i}}, {{end}}
+                    <a href="/authors/{{index $ctx.Document.AuthorsSlugs $i}}" title="{{$authorTitle}}">{{$author}}</a>{{if notLast $ctx.Document.Authors $i}}, {{end}}
                     {{end}}
                 </p>
                 {{else}}
@@ -66,7 +130,7 @@
                     <span class="text-muted">{{t .Lang "Illustrations"}}:</span>
                     {{range $i, $ill := .Document.Illustrators}}
                     {{$illTitle := t $ctx.Lang "Search for more titles by %s" $ill}}
-                    <a href="/authors/{{slugify $ill}}" title={{$illTitle}}>{{$ill}}</a>{{if notLast $ctx.Document.Illustrators $i}}, {{end}}
+                    <a href="/authors/{{slugify $ill}}" title="{{$illTitle}}">{{$ill}}</a>{{if notLast $ctx.Document.Illustrators $i}}, {{end}}
                     {{end}}
                 </p>
                 {{end}}
@@ -77,7 +141,7 @@
                 <ul class="list-inline mt-3">
                     {{range $i, $subject := .Document.Subjects}}
                         {{$subjectTitle := t $ctx.Lang "Search for more titles in %s" $subject}}
-                        <li class="list-inline-item"><a class="btn btn-secondary btn-sm mb-1 mr-1" href="/documents?subjects={{urlquery $subject}}" title={{$subjectTitle}}>{{$subject}}</a></li>
+                        <li class="list-inline-item"><a class="btn btn-secondary btn-sm mb-1 mr-1" href="/documents?subjects={{urlquery $subject}}" title="{{$subjectTitle}}">{{$subject}}</a></li>
                     {{end}}
                 </ul>
                 {{ end }}
@@ -91,3 +155,4 @@
         </div>
     </div>
 </div>
+{{end}}

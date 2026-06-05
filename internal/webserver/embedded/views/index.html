@@ -13,6 +13,32 @@
     {{if and (.Session) (ne .Session.Name "")}}
         <div id="resume-reading-section"{{if gt (len .Reading) 0}} class="{{if gt (len .LatestDocs) 0}}col-12 col-md-6 col-lg-3 mb-5{{else}}col-12 mb-5{{end}}"{{end}} hx-get="/resume-reading?compact={{if gt (len .LatestDocs) 0}}true{{else}}false{{end}}" hx-trigger="refresh" hx-swap="innerHTML">
             {{template "partials/resume-reading" dict "Lang" $lang "Session" $session "Reading" $reading "Compact" (gt (len .LatestDocs) 0) "Version" $.Version}}
+        {{if gt (len .Reading) 0}}
+        {{if gt (len .AllDocs) 0}}
+        <div class="col-12 col-md-6 col-lg-3 mb-5" id="in-progress-docs">
+            <div class="card px-0 bg-body-secondary">
+                <div class="card-header text-center">
+                    <h4 class="mb-0">{{ t .Lang "Resume reading" }}</h4>
+                </div>
+                <div class="card-body pb-0">
+                    <div class="col-12">
+                        <div id="resume-reading-docs" class="carousel slide" data-bs-ride="carousel">
+                            <div class="carousel-inner">
+                                {{range $i, $document := .Reading}}
+                                <div class="carousel-item {{if eq $i 0}}active{{end}}">
+                                {{template "partials/cover" dict "Lang" $lang "Document" $document "Session" $session "DisableActions" true "LinkToReader" true "Version" $.Version}}
+                                </div>
+                                {{end}}
+                            </div>
+                            <div class="carousel-indicators position-relative pt-3">
+                                {{range $i, $document := .Reading}}
+                                <button type="button" data-bs-target="#resume-reading-docs" data-bs-slide-to="{{$i}}" class="{{if eq $i 0}}active{{end}}" aria-current="{{if eq $i 0}}true{{end}}" aria-label="Slide {{$i}}"></button>
+                                {{end}}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
     {{end}}
 

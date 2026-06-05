@@ -276,7 +276,7 @@ func TestUpload(t *testing.T) {
 			t.Fatal(err)
 		}
 
-		if expectedResults, actualResults := 1, doc.Find("h2:contains(\"Latest additions\")").Length(); actualResults != expectedResults {
+		if expectedResults, actualResults := 1, doc.Find("h2:contains(\"All books\")").Length(); actualResults != expectedResults {
 			t.Errorf("Expected %d results, got %d", expectedResults, actualResults)
 		}
 	})

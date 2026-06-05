@@ -4,15 +4,37 @@
     </div>
 </div>
 
-<div class="row">
-    <div id="search-filters-sidebar-col" class="col-12 col-xl-3 mt-5 d-none d-xl-block p-0">
-        <div class="border rounded-4 p-3 pb-3 search-filters-sidebar-sticky">
-            <form id="search-filters-form" action="/documents" method="get" role="search">
-                {{template "partials/search-filters" dict "Lang" .Lang "FilterIdPrefix" "sidebar" "SearchFields" .SearchFields "Version" .Version "AvailableLanguages" .AvailableLanguages "DocumentsSearchPage" .DocumentsSearchPage}}
-            </form>
-        </div>
+<div class="row justify-content-center mt-4 mb-4">
+    <div class="col-12 col-md-8">
+        <form id="search-filters-form" action="/documents" method="get" role="search">
+            <div id="searchbox-container">
+                <div class="input-group mb-3 rounded-5">
+                    <label for="searchbox" class="visually-hidden">{{t .Lang "search"}}</label>
+                    <input type="search" name="search" id="searchbox" class="form-control form-control-lg border-end-0 border rounded-start-5" placeholder="{{t .Lang "Search"}}..." maxlength="255" value="{{.SearchFields.Keywords}}">
+                    <span class="input-group-append">
+                        <button class="btn btn-outline-secondary border-start-0 rounded-start-0 rounded-end-5 p-3 border" type="submit" aria-label="{{t .Lang "search"}}">
+                            <i class="bi bi-search"></i>
+                        </button>
+                    </span>
+                </div>
+            </div>
+            <p class="opacity-75 text-end mb-2">
+                <small>
+                    <i class="bi-sliders me-2"></i>
+                    <a data-bs-toggle="collapse" href="#search-filters-collapse" aria-expanded="false">
+                        {{ t .Lang "Advanced search" }}
+                    </a>
+                </small>
+            </p>
+            <div class="collapse text-start card mb-4 shadow-sm" id="search-filters-collapse">
+                {{template "partials/search-filters" dict "Lang" .Lang "FilterIdPrefix" "sidebar" "SearchFields" .SearchFields "Version" .Version "AvailableLanguages" .AvailableLanguages "DocumentsSearchPage" .DocumentsSearchPage "OmitSearchInput" true}}
+            </div>
+        </form>
     </div>
-    <div class="col-12 col-xl-9">
+</div>
+
+<div class="row">
+    <div class="col-12">
         {{template "partials/docs-list-placeholder" .}}
         <div id="list" hx-get="/documents" hx-include="#search-filters-form" hx-trigger="update from:body" hx-indicator="#placeholder-indicator" class="list-group list-group-flush">
             {{ template "partials/docs-list-content" . }}
@@ -22,8 +44,12 @@
 
 {{template "partials/delete-modal" dict "Lang" .Lang "Action" "/documents" "ModalHeader" "Delete document" "ModalBody" "Are you sure you want to delete this document?" "ModalErrorMessage" "There was an error deleting the document"}}
 
+<script id="i18n" type="application/json">{"i18n":{
+    "remove_subject": {{t .Lang "Remove subject: %s" "%s"}}
+}}</script>
+
+<script type="module" src="/js/search-filters.js{{versionParam .Version}}"></script>
 <script type="module" src="/js/delete.js{{versionParam .Version}}"></script>
 <script type="module" src="/js/highlight.js{{versionParam .Version}}"></script>
 <script type="module" src="/js/complete.js{{versionParam .Version}}"></script>
 <script type="module" src="/js/cover.js{{versionParam .Version}}"></script>
-<script type="module" src="/js/search-filters-sidebar-pin.js{{versionParam .Version}}"></script>

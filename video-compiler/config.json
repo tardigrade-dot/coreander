@@ -1,0 +1,17 @@
+{
+  "slug": "mcmeekin-sean-the-russian-revolution",
+  "baseUrl": "http://localhost:3000",
+  "chapterIndex": 20,
+  "chapterIndexEnd": 20,
+  "ttsEngine": "supertonic",
+  "resolution": {
+    "width": 1920,
+    "height": 1080
+  },
+  "headless": false,
+  "recordAllChapters": false,
+  "auth": {
+    "email": "admin@example.com",
+    "password": "admin"
+  }
+}

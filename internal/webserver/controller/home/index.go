@@ -4,6 +4,7 @@ import (
 	"log"
 
 	"github.com/gofiber/fiber/v3"
+	"github.com/svera/coreander/v4/internal/index"
 	"github.com/svera/coreander/v4/internal/webserver/model"
 )
 
@@ -19,23 +20,30 @@ func (d *Controller) Index(c fiber.Ctx) error {
 		return fiber.ErrInternalServerError
 	}
 
-	latestDocsRaw, err := d.idx.LatestDocs(d.config.LatestDocsLimit)
-	if err != nil {
-		log.Println(err)
-		return fiber.ErrInternalServerError
+	var allDocsRaw []index.Document
+	if totalDocumentsCount > 0 {
+		searchFields := index.SearchFields{
+			SortBy: []string{"-AddedOn"},
+		}
+		res, err := d.idx.Search(searchFields, 1, int(totalDocumentsCount))
+		if err != nil {
+			log.Println(err)
+			return fiber.ErrInternalServerError
+		}
+		allDocsRaw = res.Hits()
 	}
 
-	latestDocs := make([]model.AugmentedDocument, 0, len(latestDocsRaw))
-	for _, doc := range latestDocsRaw {
-		latestDocs = append(latestDocs, model.AugmentedDocument{Document: doc})
+	allDocs := make([]model.AugmentedDocument, 0, len(allDocsRaw))
+	for _, doc := range allDocsRaw {
+		allDocs = append(allDocs, model.AugmentedDocument{Document: doc})
 	}
 
 	var readingDocs []model.AugmentedDocument
 	if session.ID > 0 {
-		for i := range latestDocs {
-			result := model.AugmentedDocument{Document: latestDocs[i].Document}
+		for i := range allDocs {
+			result := model.AugmentedDocument{Document: allDocs[i].Document}
 			result = d.hlRepository.Highlighted(int(session.ID), result)
-			latestDocs[i] = result
+			allDocs[i] = result
 		}
 
 		readingDocs, err = d.readingDocs(int(session.ID))
@@ -49,7 +57,7 @@ func (d *Controller) Index(c fiber.Ctx) error {
 		"Count":      totalDocumentsCount,
 		"EmailFrom":  d.sender.From(),
 		"HomeNavbar": true,
-		"LatestDocs": latestDocs,
+		"AllDocs":    allDocs,
 		"Reading":    readingDocs,
 	}, "layout")
 }

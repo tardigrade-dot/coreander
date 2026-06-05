@@ -102,6 +102,10 @@ func routes(app *fiber.App, controllers Controllers, jwtSecret []byte, sender Se
 	// Set action preferences for templates (after authentication so Session is available)
 	app.Use(SetActionPreferences(sender))
 
+	app.Post("/tts/speech", ttsSpeech)
+	app.Get("/tts/speech", ttsSpeech)
+	app.Post("/translate", translateHandler)
+
 	highlightsGroup := app.Group("/highlights", alwaysRequireAuthentication)
 	highlightsGroup.Get("/", controllers.Highlights.List)
 	highlightsGroup.Post("/:slug", controllers.Highlights.Create)

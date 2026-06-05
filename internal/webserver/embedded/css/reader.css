@@ -158,6 +158,51 @@ foliate-view:focus {
     display: none; /* Hidden by default, shown by JS for non-PDF files */
     gap: 6px;
 }
+#tts-controls {
+    display: flex;
+    gap: 6px;
+    margin-left: auto;
+}
+#tts-controls + #menu-button {
+    margin-left: 6px;
+}
+#tts-lang-buttons {
+    display: flex;
+    gap: 2px;
+    margin-right: 2px;
+}
+.tts-lang-btn {
+    padding: 4px 8px;
+    border: 1px solid transparent;
+    border-radius: 4px;
+    background: none;
+    color: GrayText;
+    font: inherit;
+    font-size: 0.8rem;
+    cursor: pointer;
+}
+.tts-lang-btn:hover {
+    background: rgba(0, 0, 0, .1);
+    color: currentcolor;
+}
+.tts-lang-btn.active {
+    border-color: GrayText;
+    color: currentcolor;
+}
+.tts-loading-icon {
+    animation: tts-spin 1s linear infinite;
+}
+.tts-loading-icon circle {
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 2;
+    stroke-dasharray: 18 14;
+}
+@keyframes tts-spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
 
 #font-size-controls button text {
     fill: GrayText;

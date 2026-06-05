@@ -14,6 +14,7 @@ const [
     importVersioned('./foliate-js/overlayer.js'),
     importVersioned('./reader-sync.js'),
     importVersioned('./reader-toast.js'),
+    importVersioned('./reader-translate.js'),
 ])
 
 document.addEventListener('click', e => {
@@ -66,6 +67,34 @@ const getCSS = ({ spacing, justify, hyphenate, theme, fontSize, fontFamily }) =>
     aside[epub|type~="rearnote"] {
         display: none;
     }
+    /* Translation styles */
+    :root {
+        --translation-color: #0d9488;
+        --translation-border: #2dd4bf;
+    }
+    @media (prefers-color-scheme: dark) {
+        html {
+            --translation-color: #2dd4bf;
+            --translation-border: #0d9488;
+        }
+    }
+    html[data-theme="dark"] {
+        --translation-color: #2dd4bf;
+        --translation-border: #0d9488;
+    }
+    .translation {
+        color: var(--translation-color) !important;
+        font-size: 0.95em !important;
+        line-height: 1.5 !important;
+        margin-top: 0.4em !important;
+        margin-bottom: 0.8em !important;
+        font-style: normal !important;
+        border-left: 3px solid var(--translation-border) !important;
+        padding-left: 8px !important;
+        opacity: 0.9 !important;
+        text-align: start !important;
+        display: block !important;
+    }
 `
 
 const $ = document.querySelector.bind(document)
@@ -99,7 +128,9 @@ class Reader {
     #skipNextPush = false
     sync = null
     view = null
+    tts = null
     translations = null
+    translator = null
     style = {
         spacing: 1.4, // Line height
         justify: true,
@@ -520,6 +551,13 @@ class Reader {
         // Initialize footnote modal
         this.#setupFootnoteModal()
 
+        // Initialize text-to-speech controls
+        this.tts = new ReaderTTS(this)
+
+        // Initialize translation controls
+        this.translator = new ReaderTranslate(this)
+
+        // Sync position from server when tab becomes visible or window gains focus
         document.addEventListener('visibilitychange', () => {
             if (!document.hidden && !this.#sidebarOpening) {
                 this.#skipNextPush = true
@@ -750,6 +788,8 @@ class Reader {
     }
     #onLoad({ detail: { doc } }) {
         doc.addEventListener('keydown', this.#handleKeydown.bind(this))
+        this.tts?.onLoad(doc)
+        this.translator?.onLoad(doc)
     }
     async #handleFootnoteLinkEvent(href) {
         try {
@@ -865,6 +905,7 @@ class Reader {
         slider.value = fraction
         slider.title = `${percent} · ${loc}`
         if (tocItem?.href) this.#tocView?.setCurrentHref?.(tocItem.href)
+        this.tts?.onRelocate(detail)
     }
     showSessionExpired() {
         // Only show the notification once
@@ -890,6 +931,20 @@ const open = async file => {
     globalThis.reader = reader
     await reader.open(file)
 }
+
+window.addEventListener('message', event => {
+    if (event.data && event.data.type === 'setMark') {
+        const reader = globalThis.reader
+        if (reader && reader.view?.tts) {
+            try {
+                reader.view.tts.setMark(event.data.mark)
+            } catch (e) {
+                console.error('Error setting mark from message:', e)
+            }
+        }
+    }
+})
+
 
 const url = document.getElementById('url').value
 if (url) fetch(url)

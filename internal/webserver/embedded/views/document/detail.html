@@ -2,7 +2,7 @@
 <div class="row mt-5">
     <div class="col-12">
         <div class="mb-2">
-            <a href="#" class="text-decoration-none" onclick="event.preventDefault(); history.back();">&larr; {{t $lang "Return"}}</a>
+            <a href="#" class="text-decoration-none" onclick="event.preventDefault(); window.location.href = '/'">&larr; {{t $lang "Return"}}</a>
         </div>
         <hr />
         {{ if ne .Document.Series "" }} {{$seriesTitle := t $lang "Search for more titles belonging to %s" .Document.Series}}

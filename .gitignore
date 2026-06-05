@@ -6,3 +6,8 @@ tmp
 .air.toml
 .cursor
 .claude
+.antigravitycli
+node_modules
+dist
+output
+bin

@@ -1,0 +1,18 @@
+{
+  "name": "epub-video-recorder",
+  "version": "1.0.0",
+  "description": "Records EPUB reader TTS play and visual highlights to MP4 video",
+  "main": "dist/main.js",
+  "scripts": {
+    "build": "tsc",
+    "start": "ts-node src/main.ts"
+  },
+  "dependencies": {
+    "playwright": "^1.42.1"
+  },
+  "devDependencies": {
+    "@types/node": "^20.11.24",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.3.3"
+  }
+}
