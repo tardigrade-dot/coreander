@@ -15,7 +15,7 @@ import (
 	"github.com/svera/coreander/v4/internal/supertonic"
 )
 
-const defaultTTSSpeechURL = "http://127.0.0.1:8080/v1/audio/speech"
+const defaultTTSSpeechURL = "http://127.0.0.1:8090/v1/audio/speech"
 
 var ttsFootnoteReferencePattern = regexp.MustCompile(`[［\[]\s*\d+(?:\s*[-,，、]\s*\d+)*\s*[］\]]`)
 var supertonicTTS = supertonic.NewService(os.Getenv("COREANDER_SUPERTONIC_MODEL_DIR"))
