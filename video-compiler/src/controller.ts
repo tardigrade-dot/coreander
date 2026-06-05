@@ -116,8 +116,35 @@ export class RecordController {
       }
     }
 
+    let slug = this.config.slug;
+
+    // 4b. If local EPUB path is provided, upload it first to resolve the slug
+    if (this.config.epubPath) {
+      console.log(`[Controller] Uploading EPUB file: ${this.config.epubPath}`);
+      await this.page.goto(`${baseUrl}/upload`);
+      await this.page.waitForSelector('#file-selector');
+      await this.page.setInputFiles('#file-selector', this.config.epubPath);
+      
+      console.log('[Controller] Submitting upload form...');
+      await Promise.all([
+        this.page.waitForNavigation({ timeout: 45000 }),
+        this.page.click('#file-submit')
+      ]);
+
+      const currentUrl = this.page.url();
+      console.log(`[Controller] Redirected URL after upload: ${currentUrl}`);
+      
+      const urlObj = new URL(currentUrl);
+      const pathParts = urlObj.pathname.split('/');
+      slug = pathParts[pathParts.length - 1];
+      if (!slug || slug === 'upload' || slug === 'documents') {
+        throw new Error(`[Controller] Failed to upload or retrieve document slug. Redirected URL was: ${currentUrl}`);
+      }
+      console.log(`[Controller] Resolved document slug: ${slug}`);
+    }
+
     // 5. Navigate to reader with video mode query parameter
-    const readerUrl = `${baseUrl}/documents/${this.config.slug}/read?mode=video`;
+    const readerUrl = `${baseUrl}/documents/${slug}/read?mode=video`;
     console.log(`[Controller] Navigating to reader: ${readerUrl}`);
     await this.page.goto(readerUrl);
 

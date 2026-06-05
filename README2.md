@@ -13,6 +13,8 @@ mage build osxapple && ./coreander -d localhost:3000 /Users/larry/Downloads/book
 
 rm -rf output/ && npm start
 
+npm start -- "/Users/larry/Downloads/books/The Russian Revolution - A New History (2017) (Sean McMeekin) (Z-Library).epub" 
+
 --- gemma4
 
 llama-server \

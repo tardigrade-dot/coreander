@@ -10,6 +10,7 @@ export interface AuthConfig {
 
 export interface Config {
   slug: string;
+  epubPath?: string;
   baseUrl?: string;
   chapterIndex?: number;
   chapterIndexEnd?: number;

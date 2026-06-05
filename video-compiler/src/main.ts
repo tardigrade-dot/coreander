@@ -37,8 +37,33 @@ async function main() {
     return;
   }
 
-  if (!config.slug || config.slug === 'insert-epub-slug-here') {
-    console.error('[Error] Please specify a valid epub document slug in config.json!');
+  // Parse CLI argument if provided
+  if (process.argv[2]) {
+    const arg = process.argv[2];
+    const resolvedPath = path.resolve(arg);
+    try {
+      const stats = await fs.stat(resolvedPath);
+      if (stats.isFile()) {
+        config.epubPath = resolvedPath;
+        console.log(`[Main] Using input EPUB file path: ${config.epubPath}`);
+      } else {
+        console.log(`[Main] Argument "${arg}" is not a file. Treating as slug.`);
+        config.slug = arg;
+      }
+    } catch (e) {
+      console.log(`[Main] Argument "${arg}" is not a local file. Treating as slug.`);
+      config.slug = arg;
+    }
+  }
+
+  const hasSlug = config.slug && config.slug !== 'insert-epub-slug-here';
+  if (!hasSlug && !config.epubPath) {
+    console.error('[Error] Please specify a valid epub document slug in config.json, or pass an EPUB file path as an argument!');
+    return;
+  }
+
+  if (config.epubPath && (!config.auth || !config.auth.email || !config.auth.password)) {
+    console.error('[Error] Uploading a local EPUB file requires "auth" (email and password of an admin user) to be configured in config.json!');
     return;
   }
 
