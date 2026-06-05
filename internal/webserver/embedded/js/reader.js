@@ -7,6 +7,8 @@ const [
     { Overlayer },
     { ReaderSync },
     { ReaderToast },
+    { ReaderTTS },
+    { ReaderTranslate },
 ] = await Promise.all([
     importVersioned('./foliate-js/view.js'),
     importVersioned('./foliate-js/ui/tree.js'),
@@ -14,6 +16,7 @@ const [
     importVersioned('./foliate-js/overlayer.js'),
     importVersioned('./reader-sync.js'),
     importVersioned('./reader-toast.js'),
+    importVersioned('./reader-tts.js'),
     importVersioned('./reader-translate.js'),
 ])
 
