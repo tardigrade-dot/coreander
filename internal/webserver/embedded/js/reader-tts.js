@@ -18,6 +18,8 @@ export class ReaderTTS {
     #ttsCurrentMark = '0'
     #ttsStalePrefetch = false
     #ttsClickRange = null
+    #ttsPromiseCache = new Map()
+    #ttsPrefetchAbortController = null
 
     constructor(reader) {
         this.#reader = reader
@@ -149,13 +151,20 @@ export class ReaderTTS {
             URL.revokeObjectURL(item.url)
         }
         this.#ttsAudioQueue = []
+        this.#ttsPrefetchAbortController?.abort()
+        this.#ttsPrefetchAbortController = null
+        this.#ttsPromiseCache.clear()
     }
 
     async #playTTSSegment(mode) {
         if (!this.#reader.view) return
 
         this.#ttsAbortController?.abort()
-        this.#clearTTSAudio()
+        if (mode !== 'next') {
+            this.#clearTTSAudio()
+        } else {
+            this.#ttsAudioQueue = []
+        }
         this.#ttsAbortController = new AbortController()
         this.#ttsState = 'loading'
         this.#updateTTSButtons()
@@ -178,7 +187,15 @@ export class ReaderTTS {
                 return
             }
             console.log("tts text: ", item.text)
-            const blob = await this.#fetchSpeech(item.text, this.#ttsAbortController.signal)
+            let promise = this.#ttsPromiseCache.get(item.text)
+            if (!promise) {
+                if (!this.#ttsPrefetchAbortController) {
+                    this.#ttsPrefetchAbortController = new AbortController()
+                }
+                promise = this.#fetchSpeech(item.text, this.#ttsPrefetchAbortController.signal)
+                this.#ttsPromiseCache.set(item.text, promise)
+            }
+            const blob = await promise
             await this.#playAudioBlob(blob, item.mark)
         } catch (error) {
             if (error.name === 'AbortError') return
@@ -384,6 +401,7 @@ export class ReaderTTS {
                     return null
                 }
             }
+            this.#prefetchTextQueue(this.#ttsTextQueue)
         }
         return this.#ttsTextQueue.shift()
     }
@@ -421,6 +439,30 @@ export class ReaderTTS {
             } catch { /* ignore */ }
         }
         return ssml
+    }
+
+    #prefetchTextQueue(segments) {
+        if (new URLSearchParams(window.location.search).get('mode') !== 'video') return
+        console.log(`[TTS Parallel Prefetch] Prefetching ${segments.length} sentences in parallel...`)
+        
+        if (!this.#ttsPrefetchAbortController) {
+            this.#ttsPrefetchAbortController = new AbortController()
+        }
+        const signal = this.#ttsPrefetchAbortController.signal
+        
+        for (const item of segments) {
+            if (!this.#ttsPromiseCache.has(item.text)) {
+                const promise = this.#fetchSpeech(item.text, signal).catch(err => {
+                    const isAbort = err.name === 'AbortError' || err.message?.includes('abort') || err.message?.includes('Abort')
+                    if (!isAbort) {
+                        console.error('[TTS Parallel Prefetch] Error:', err)
+                    }
+                    this.#ttsPromiseCache.delete(item.text)
+                    throw err
+                })
+                this.#ttsPromiseCache.set(item.text, promise)
+            }
+        }
     }
 
     async #goToNextTTSSection() {
