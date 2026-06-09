@@ -58,7 +58,7 @@ func ttsSpeech(c fiber.Ctx) error {
 		return fiber.ErrInternalServerError
 	}
 
-	httpClient := &http.Client{Timeout: 2 * time.Minute}
+	httpClient := &http.Client{Timeout: 30 * time.Minute}
 	upstreamReq, err := http.NewRequestWithContext(c.Context(), http.MethodPost, ttsSpeechURL(), bytes.NewReader(payload))
 	if err != nil {
 		return fiber.ErrInternalServerError

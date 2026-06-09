@@ -441,28 +441,53 @@ export class ReaderTTS {
         return ssml
     }
 
-    #prefetchTextQueue(segments) {
+    async #prefetchTextQueue(segments) {
         if (new URLSearchParams(window.location.search).get('mode') !== 'video') return
-        console.log(`[TTS Parallel Prefetch] Prefetching ${segments.length} sentences in parallel...`)
+        console.log(`[TTS Parallel Prefetch] Prefetching ${segments.length} sentences with concurrency limit...`)
         
         if (!this.#ttsPrefetchAbortController) {
             this.#ttsPrefetchAbortController = new AbortController()
         }
         const signal = this.#ttsPrefetchAbortController.signal
         
-        for (const item of segments) {
-            if (!this.#ttsPromiseCache.has(item.text)) {
-                const promise = this.#fetchSpeech(item.text, signal).catch(err => {
-                    const isAbort = err.name === 'AbortError' || err.message?.includes('abort') || err.message?.includes('Abort')
-                    if (!isAbort) {
-                        console.error('[TTS Parallel Prefetch] Error:', err)
+        // Limit maximum concurrency to 3 to avoid overloading CPU/inference queue
+        const CONCURRENCY = 3
+        const queue = [...segments]
+        
+        const worker = async () => {
+            while (queue.length > 0) {
+                const item = queue.shift()
+                if (!item) break
+                
+                if (!this.#ttsPromiseCache.has(item.text)) {
+                    const promise = this.#fetchSpeech(item.text, signal).catch(err => {
+                        const isAbort = err.name === 'AbortError' || err.message?.includes('abort') || err.message?.includes('Abort')
+                        if (!isAbort) {
+                            console.error('[TTS Parallel Prefetch] Error:', err)
+                        }
+                        this.#ttsPromiseCache.delete(item.text)
+                        throw err
+                    })
+                    this.#ttsPromiseCache.set(item.text, promise)
+                    
+                    // Wait for this request to finish before worker picks up next
+                    try {
+                        await promise
+                    } catch (e) {
+                        // Handled in promise catch
                     }
-                    this.#ttsPromiseCache.delete(item.text)
-                    throw err
-                })
-                this.#ttsPromiseCache.set(item.text, promise)
+                }
             }
         }
+        
+        const workers = []
+        for (let i = 0; i < Math.min(CONCURRENCY, segments.length); i++) {
+            workers.push(worker())
+        }
+        // Let them run in background
+        Promise.all(workers).catch(err => {
+            console.error('[TTS Parallel Prefetch] Worker pool error:', err)
+        })
     }
 
     async #goToNextTTSSection() {

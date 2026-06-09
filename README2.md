@@ -7,7 +7,7 @@ English TTS use supertonic
     --backend vibevoice-tts \
     -m /Users/larry/Downloads/vibevoice-1.5b-tts-q8_0.gguf \
     --voice /Users/larry/Documents/resources/qinsheng-4s-isolated_fixed.wav \
-    --port 8080
+    --port 8090
 
 mage build osxapple && ./coreander -d localhost:3000 /Users/larry/Downloads/books
 
